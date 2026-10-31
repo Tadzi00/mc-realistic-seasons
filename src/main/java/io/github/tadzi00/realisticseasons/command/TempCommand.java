@@ -72,7 +72,12 @@ public final class TempCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(RawContract.errorLine("chunk not loaded"));
             return;
         }
-        sender.sendMessage(RawContract.line(kind, plugin.temperatures().report(loc, roomMode)));
+        String line = RawContract.line(kind, plugin.temperatures().report(loc, roomMode));
+        if (roomMode) {
+            double eq = plugin.temperatures().equilibrium(loc);
+            if (!Double.isNaN(eq)) line = RawContract.withFields(line, "\"equilibriumC\":" + RawContract.oneDecimal(eq));
+        }
+        sender.sendMessage(line);
     }
 
     private void temp(Player p) {

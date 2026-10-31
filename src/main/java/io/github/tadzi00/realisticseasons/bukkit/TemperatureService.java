@@ -148,6 +148,12 @@ public final class TemperatureService {
      * Builds the RS|v1 report. For kind "temp" tempC is the felt temperature; for kind "room" it is the room
      * air temperature (inside) or the felt outdoor temperature (outside).
      */
+    /** Room air temperature the room is heading to (thermal inertia), or NaN when not inside a room. */
+    public double equilibrium(Location loc) {
+        Felt f = felt(loc, RoomService.Budget.FORCE);
+        return f.inside() ? f.lookup().room().equilibrium() : Double.NaN;
+    }
+
     public RawContract.Report report(Location loc, boolean roomMode) {
         Felt f = felt(loc, RoomService.Budget.FORCE);
         RoomScan sc = f.scan();

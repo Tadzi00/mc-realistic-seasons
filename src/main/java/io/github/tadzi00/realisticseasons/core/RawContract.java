@@ -35,6 +35,12 @@ public final class RawContract {
         return PREFIX + kind + "|" + json(r);
     }
 
+    /** Appends extra JSON fields (e.g. {@code "equilibriumC":21.4}) before the closing brace. Additive v1. */
+    public static String withFields(String line, String fields) {
+        if (fields == null || fields.isEmpty() || !line.endsWith("}")) return line;
+        return line.substring(0, line.length() - 1) + "," + fields + "}";
+    }
+
     /**
      * Same line plus the player's body: {@code ...,"comfortable":false,"bodyC":34.1,"stage":"SHIVERING"}.
      * Additive (v1 readers ignore unknown fields); produced by {@code /temp raw player <name>}.

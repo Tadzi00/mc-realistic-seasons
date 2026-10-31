@@ -232,6 +232,12 @@ double  getBodyTemperature(org.bukkit.entity.Player)
 ```
 Adding methods is fine; renaming/removing is not.
 
+### 11.0 Additive v1 field: equilibriumC
+
+`/room raw x y z` (inside a room) appends `"equilibriumC":<one decimal>`, the temperature the room air is
+heading to (thermal inertia, τ = thermal-time-constant-seconds). Lets callers judge "warm enough" right after
+adding heat instead of waiting minutes.
+
 ### 11.1 Additive v1 fields: body temperature
 
 `/temp raw player <name>` (and `/room raw player <name>`) report at that player's position and append
