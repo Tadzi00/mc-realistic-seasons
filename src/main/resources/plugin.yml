@@ -1,0 +1,56 @@
+name: RealisticSeasons
+version: '${version}'
+main: io.github.tadzi00.realisticseasons.RealisticSeasonsPlugin
+api-version: '1.21'
+description: Realistic seasons, temperature, room insulation and freezing.
+author: Tadzi00
+website: https://github.com/Tadzi00/mc-realistic-seasons
+
+commands:
+  temp:
+    description: Show the temperature where you stand (or "/temp raw [x y z] [world]" for machine-readable output).
+    usage: /temp [raw [x y z] [world]]
+    permission: realisticseasons.temp
+  room:
+    description: Analyse the room you are standing in (or "/room raw [x y z] [world]").
+    usage: /room [raw [x y z] [world]]
+    permission: realisticseasons.room
+  season:
+    description: Show or change the current season.
+    usage: /season [set <season> [day] [world] | length <days> [world]]
+    permission: realisticseasons.season
+  rs:
+    description: RealisticSeasons administration.
+    usage: /rs <reload|thermometer [player]|info>
+    permission: realisticseasons.admin
+
+permissions:
+  realisticseasons.temp:
+    description: Use /temp
+    default: true
+  realisticseasons.room:
+    description: Use /room
+    default: true
+  realisticseasons.season:
+    description: Use /season (view)
+    default: true
+  realisticseasons.season.admin:
+    description: Use /season set and /season length
+    default: op
+  realisticseasons.raw:
+    description: Use the machine-readable "/temp raw" and "/room raw" output
+    default: op
+  realisticseasons.admin:
+    description: Use /rs reload and /rs thermometer
+    default: op
+    children:
+      realisticseasons.season.admin: true
+      realisticseasons.raw: true
+  realisticseasons.*:
+    description: All RealisticSeasons permissions
+    default: op
+    children:
+      realisticseasons.temp: true
+      realisticseasons.room: true
+      realisticseasons.season: true
+      realisticseasons.admin: true

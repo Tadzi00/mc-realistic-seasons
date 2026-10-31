@@ -1,0 +1,277 @@
+# =====================================================================
+#  RealisticSeasons configuration
+#  All temperatures are in °C. See DESIGN.md for the math behind each value.
+#  Apply changes with /rs reload.
+# =====================================================================
+
+# Difficulty preset: easy | normal | hard | brutal | custom
+#   easy   - half cooling and freeze damage, milder winters (+4°C), crops tolerate 3°C more cold
+#   normal - the values below as written
+#   hard   - 1.5x cooling/damage, winters 3°C colder, heat sources 15% weaker
+#   brutal - 2.2x cooling, 2.5x freeze damage, winters 6°C colder, heat sources 30% weaker
+#   custom - the preset does nothing; only the multipliers below apply
+difficulty: normal
+
+# Applied ON TOP of the preset. Multiplicative, except entries ending in "-offset" (added, in °C).
+multipliers:
+  cooling-rate: 1.0            # how fast body temperature drops in the cold
+  freeze-damage: 1.0           # hypothermia / heat stroke damage
+  water-freeze-speed: 1.0      # chance of exposed water turning to ice
+  snow-accumulation: 1.0       # chance of snow layers building up
+  crop-cutoff-offset: 0.0      # added to crops.min-temperature
+  winter-temperature-offset: 0.0  # added to the WINTER base temperature
+  season-length: 1.0           # multiplies seasons.length-days
+  room-max-volume: 1.0         # multiplies rooms.max-volume
+  heat-source-power: 1.0       # multiplies every heat source's power
+  winter-hostile-spawn: 1.0    # multiplies natural hostile spawns in WINTER
+
+# Worlds the plugin is active in. Empty "enabled" = every world not listed in "disabled".
+worlds:
+  enabled: []
+  disabled: []
+
+seasons:
+  enabled: true
+  # Length of ONE season in in-game days (a year = 4 seasons). /season length overrides it per world.
+  length-days: 14
+  # Interpolate the base temperature around season boundaries instead of jumping.
+  smooth-transition: true
+  # Width of the blend window centred on each boundary, in days.
+  transition-days: 4
+  base-temperature:
+    SPRING: 10.0
+    SUMMER: 22.0
+    AUTUMN: 9.0
+    WINTER: -6.0
+
+temperature:
+  # Biome offset = (biomeTemperature - biome-reference) * biome-scale. Plains (0.8) = 0, desert (2.0) = +18,
+  # taiga (0.25) = -8.25, snowy plains (0.0) = -12.
+  biome-reference: 0.8
+  biome-scale: 15.0
+  # Day/night swing amplitude; warmest at peak-tick (8000 = ~14:00), coldest 12000 ticks later.
+  diurnal-amplitude: 5.0
+  peak-tick: 8000
+  # Altitude: colder above lapse-start-y.
+  lapse-rate-per-block: 0.05
+  lapse-start-y: 64
+  rain-offset: -3.0
+  thunder-offset: -4.5
+  # Underground: blend toward cave-temperature between these depths below the local surface.
+  cave-temperature: 10.0
+  cave-blend-start-depth: 4
+  cave-blend-full-depth: 30
+  # Deep underground gets slightly warmer below this Y.
+  geothermal-start-y: 0
+  geothermal-per-block: 0.05
+  # Small deterministic spatial/daily noise (± this many °C).
+  noise-amplitude: 1.5
+  noise-cell-size: 32
+  # Fixed temperatures for other dimensions.
+  nether: 40.0
+  the-end: 5.0
+  # Comfort range used by /temp, the API and the RS|v1 "comfortable" field; also the body's neutral zone.
+  comfort-min: 12.0
+  comfort-max: 28.0
+
+rooms:
+  enabled: true
+  # Maximum number of air blocks a room may contain. Bigger = treated as outside.
+  max-volume: 1000
+  # More than this many sky-exposed openings = treated as outside (e.g. missing wall or roof).
+  max-large-leaks: 8
+  # Re-scan a cached room after this many seconds even without block changes (catches furnaces lighting etc.).
+  rescan-seconds: 30
+  # Drop cached rooms not used for this long.
+  cache-expire-seconds: 300
+  # true: a newly detected room starts at its equilibrium temperature. false: starts at outside temperature.
+  seed-at-equilibrium: true
+  # Insulation of wall blocks (1.0 = stone). Patterns: exact material, "*_SUFFIX", "PREFIX_*", "*CONTAINS*".
+  default-insulation: 1.0
+  door-insulation: 0.8
+  insulation:
+    "*_WOOL": 2.5
+    "SNOW_BLOCK": 1.6
+    "*_LOG": 1.8
+    "*_WOOD": 1.8
+    "*_PLANKS": 1.5
+    "*_SLAB": 0.9
+    "*_STAIRS": 1.0
+    "HAY_BLOCK": 2.0
+    "*_TERRACOTTA": 1.2
+    "TERRACOTTA": 1.2
+    "BRICKS": 1.3
+    "MUD_BRICKS": 1.4
+    "DIRT": 1.3
+    "GRASS_BLOCK": 1.3
+    "*_CONCRETE": 1.0
+    "*GLASS": 0.4
+    "ICE": 0.6
+    "PACKED_ICE": 0.6
+    "*_LEAVES": 0.2
+    "IRON_BLOCK": 0.5
+    "COPPER_BLOCK": 0.5
+  # Blocks that let air through: counted as SMALL leaks (like an open door).
+  small-leak-materials:
+    - "*_PANE"
+    - "GLASS_PANE"
+    - "IRON_BARS"
+    - "*_FENCE"
+
+heat:
+  enabled: true
+  # Sealed room rise: sum(power) * insulation / (loss-coefficient * volume^volume-exponent)
+  loss-coefficient: 0.1
+  volume-exponent: 0.6667
+  # Leaky room keeps exp(-(small*small-leak-weight + large*large-leak-weight)) of that rise.
+  small-leak-weight: 0.12
+  large-leak-weight: 0.6
+  # Local warmth near a source: power * local-gain / (1 + d) * (1 - d / radius)
+  local-gain: 1.0
+  min-local-weight: 0.3
+  max-local-contribution: 40.0
+  max-room-rise: 45.0
+  # Thermal inertia: room temperature approaches equilibrium with this time constant.
+  thermal-time-constant-seconds: 120
+  # Outdoors, scan this many blocks around a point for heat sources.
+  local-scan-radius: 5
+  # power (heat units) and radius (blocks). requires-lit: only counts when the block is lit.
+  sources:
+    TORCH: {power: 6, radius: 4}
+    WALL_TORCH: {power: 6, radius: 4}
+    SOUL_TORCH: {power: 3, radius: 3}
+    SOUL_WALL_TORCH: {power: 3, radius: 3}
+    LANTERN: {power: 8, radius: 4}
+    SOUL_LANTERN: {power: 4, radius: 3}
+    CAMPFIRE: {power: 40, radius: 6, requires-lit: true}
+    SOUL_CAMPFIRE: {power: 25, radius: 5, requires-lit: true}
+    FURNACE: {power: 30, radius: 5, requires-lit: true}
+    SMOKER: {power: 30, radius: 5, requires-lit: true}
+    BLAST_FURNACE: {power: 35, radius: 5, requires-lit: true}
+    FIRE: {power: 35, radius: 5}
+    SOUL_FIRE: {power: 25, radius: 5}
+    LAVA: {power: 60, radius: 6}
+    MAGMA_BLOCK: {power: 15, radius: 3}
+    GLOWSTONE: {power: 3, radius: 2}
+    SHROOMLIGHT: {power: 3, radius: 2}
+    JACK_O_LANTERN: {power: 5, radius: 3}
+    "*CANDLE": {power: 2, radius: 2, requires-lit: true}
+
+body:
+  enabled: true
+  update-interval-ticks: 20
+  # Felt temperature (room scan / local heat) is refreshed this often per player.
+  felt-refresh-ticks: 40
+  normal: 37.0
+  # °C of core temperature per minute per °C below comfort-min (divided by 1 + clothing insulation).
+  cooling-rate: 0.03
+  heating-rate: 0.02
+  recovery-rate: 0.6
+  metabolic-heat: 0.1
+  sweating: 0.1
+  sprint-warm: 0.3
+  wet-felt-penalty: 4.0
+  wet-multiplier: 1.5
+  # Seconds you stay wet after leaving water/rain (halved near warmth).
+  wet-linger-seconds: 30
+  clothing-heat-factor: 0.3
+  thresholds:
+    cold: 36.0
+    shivering: 35.0
+    hypothermia: 33.0
+    hot: 38.0
+    heat-stroke: 39.5
+  min-core: 25.0
+  max-core: 43.0
+  # Damage per second (half-hearts) in the hypothermia stage (scaled by freeze-damage multiplier).
+  freeze-damage-per-second: 0.5
+  heat-stroke:
+    enabled: false
+    damage-per-second: 0.5
+  # Insulation per worn armor piece, by material prefix (LEATHER_HELMET -> LEATHER) or exact name.
+  clothing:
+    LEATHER: 0.75
+    CHAINMAIL: 0.1
+    IRON: 0.2
+    GOLDEN: 0.2
+    DIAMOND: 0.25
+    NETHERITE: 0.35
+    TURTLE: 0.1
+    ELYTRA: 0.2
+    CARVED_PUMPKIN: 0.15
+  # Freeze overlay (vanilla powder snow vignette) while cold.
+  freeze-overlay: true
+  messages: true
+
+crops:
+  enabled: true
+  # Plants do not grow when the temperature at the plant is below this.
+  # Indoors, heated rooms count (winter farming works only inside).
+  min-temperature: 5.0
+  affect-saplings: true
+  affect-spread: true
+  affect-bonemeal: true
+  # Room scans allowed per tick for crop checks (cached afterwards).
+  max-scans-per-tick: 2
+
+world-effects:
+  enabled: true
+  interval-ticks: 10
+  # Total number of random surface columns checked per run (shared between all players).
+  columns-per-run: 48
+  radius: 64
+  water-freezing:
+    enabled: true
+    below: 0.0
+    chance: 0.15
+  snow:
+    enabled: true
+    below: 0.0
+    requires-precipitation: true
+    max-layers: 3
+    chance: 0.2
+  thaw:
+    enabled: true
+    above: 2.0
+    chance: 0.1
+    melt-ice: true
+    melt-snow: true
+    # Never melt ice/snow in biomes with vanilla temperature below this (snowy/frozen biomes keep theirs).
+    cold-biome-threshold: 0.15
+
+mobs:
+  enabled: true
+  max-extra-per-spawn: 2
+  # Multipliers for NATURAL spawns. <1 cancels some spawns, >1 adds extra spawns of the same type.
+  seasons:
+    SPRING:
+      default: 1.0
+      entities: {RABBIT: 1.5, BEE: 1.3}
+    SUMMER:
+      default: 1.0
+      entities: {}
+    AUTUMN:
+      default: 1.0
+      entities: {ZOMBIE: 1.2, SKELETON: 1.1}
+    WINTER:
+      default: 1.0
+      entities: {STRAY: 2.0, WOLF: 2.0, POLAR_BEAR: 1.5, COW: 0.6, PIG: 0.6, SHEEP: 0.7, CHICKEN: 0.6, BEE: 0.0}
+  # In winter, outdoors below this temperature, some mobs spawn as a cold variant instead.
+  winter-replacements:
+    enabled: true
+    below: 0.0
+    rules:
+      SKELETON: {to: STRAY, chance: 0.5}
+
+thermometer:
+  enabled: true
+
+performance:
+  # Global budget of player/command room scans per tick (API and commands are never refused).
+  max-room-scans-per-tick: 4
+  # Positions found to be outside are cached this long.
+  outside-cache-seconds: 5
+
+messages:
+  hypothermia-death: "%player% froze to death"
+  heat-stroke-death: "%player% died of heat stroke"
