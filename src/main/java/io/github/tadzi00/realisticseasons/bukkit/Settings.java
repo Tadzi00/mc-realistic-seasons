@@ -126,7 +126,16 @@ public final class Settings {
     public final double replacementsBelow;
     public final Map<EntityType, Replacement> replacements;
 
+    /** Season and day a world starts in the first time the plugin sees it. */
+    public final Season startSeason;
+    public final int startDay;
     public final boolean thermometerEnabled;
+    /** Occasional inaccurate "~5°C" action-bar hint without a thermometer, only when uncomfortable. */
+    public final boolean roughEnabled;
+    public final int roughStep;
+    public final double roughMaxError;
+    public final int roughMinSeconds;
+    public final int roughMaxSeconds;
 
     public final int maxRoomScansPerTick;
     public final long outsideCacheMillis;
@@ -153,6 +162,15 @@ public final class Settings {
         disabledWorlds = new HashSet<>(c.getStringList("worlds.disabled"));
 
         seasonsEnabled = c.getBoolean("seasons.enabled", true);
+        Season start;
+        try {
+            start = Season.valueOf(c.getString("seasons.start-season", "SUMMER").toUpperCase(java.util.Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            log.warning("seasons.start-season: unknown season, using SUMMER");
+            start = Season.SUMMER;
+        }
+        startSeason = start;
+        startDay = Math.max(1, c.getInt("seasons.start-day", 3));
         seasonLengthDays = Math.max(1, (int) Math.round(c.getInt("seasons.length-days", 14) * mult.seasonLength()));
         transitionDays = c.getBoolean("seasons.smooth-transition", true) ? Math.max(0, c.getDouble("seasons.transition-days", 4)) : 0;
         Map<Season, Double> bt = new EnumMap<>(Season.class);
@@ -341,6 +359,11 @@ public final class Settings {
         replacements = Collections.unmodifiableMap(rep);
 
         thermometerEnabled = c.getBoolean("thermometer.enabled", true);
+        roughEnabled = c.getBoolean("thermometer.rough-reading.enabled", true);
+        roughStep = Math.max(1, c.getInt("thermometer.rough-reading.step", 5));
+        roughMaxError = Math.max(0, c.getDouble("thermometer.rough-reading.max-error", 3.0));
+        roughMinSeconds = Math.max(1, c.getInt("thermometer.rough-reading.min-interval-seconds", 20));
+        roughMaxSeconds = Math.max(roughMinSeconds, c.getInt("thermometer.rough-reading.max-interval-seconds", 60));
         maxRoomScansPerTick = Math.max(1, c.getInt("performance.max-room-scans-per-tick", 4));
         outsideCacheMillis = Math.max(0, c.getLong("performance.outside-cache-seconds", 5)) * 1000L;
 

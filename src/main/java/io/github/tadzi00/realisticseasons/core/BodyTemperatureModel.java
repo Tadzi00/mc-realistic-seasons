@@ -38,7 +38,7 @@ public final class BodyTemperatureModel {
             double maxCore
     ) {
         public static Params defaults() {
-            return new Params(37.0, 12.0, 28.0, 0.03, 0.02, 0.6, 0.1, 0.1, 0.3, 4.0, 1.5, 0.3, 1.0, false,
+            return new Params(37.0, 12.0, 28.0, 0.015, 0.02, 0.6, 0.1, 0.1, 0.3, 4.0, 1.5, 0.3, 1.0, false,
                     36.0, 35.0, 33.0, 38.0, 39.5, 25.0, 43.0);
         }
     }

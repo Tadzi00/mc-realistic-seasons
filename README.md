@@ -66,6 +66,10 @@ Errors are reported as one line too: `RS|v1|error|{"error":"chunk not loaded"}`.
 Shaped recipe (one column): **Glass** over **Redstone** over **Copper Ingot**. Hold it in either hand to see
 felt temperature, body temperature, room status and outside temperature on the action bar.
 
+Without a thermometer you still get an occasional rough guess on the action bar, like `~5°C`, but only when
+the temperature is uncomfortable. It is rounded to 5 °C and can be a few degrees off
+(`thermometer.rough-reading` in config).
+
 ## Configuration overview
 
 `config.yml` is fully commented. Main sections:

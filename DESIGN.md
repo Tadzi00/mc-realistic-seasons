@@ -249,6 +249,11 @@ Adding methods is fine; renaming/removing is not.
 
 ## 13. "Not bugs" list
 
+- **The `~5°C` action-bar hint without a thermometer is wrong on purpose.** It is the felt temperature
+  plus a random error (±`max-error`, default 3 °C), rounded to `step` (5 °C), shown at random 20–60 s
+  intervals and only while uncomfortable. It gives a feel for danger; the thermometer is the precise
+  instrument. Holding a thermometer replaces the hint. Math: `core/RoughReading` (tested).
+
 - Standing in a doorway (open door) is *a little* colder than inside, not freezing. Intended (§4).
 - A huge hall (> 1000 air blocks) counts as outside even with a roof. Raise `rooms.max-volume`.
 - A room with a missing wall / > 8 sky openings counts as outside.

@@ -31,7 +31,13 @@ public final class SeasonService {
 
     public double offset(World w) {
         Double d = w.getPersistentDataContainer().get(offsetKey, PersistentDataType.DOUBLE);
-        return d == null ? 0 : d;
+        if (d != null) return d;
+        // First time this world is seen: world day 0 = configured start season/day. Stored, so later
+        // config edits don't make the calendar jump.
+        Settings s = plugin.settings();
+        double off = SeasonCalculator.offsetFor(0, s.startSeason, s.startDay, lengthDays(w));
+        w.getPersistentDataContainer().set(offsetKey, PersistentDataType.DOUBLE, off);
+        return off;
     }
 
     public double calendarDay(World w) {

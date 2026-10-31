@@ -34,6 +34,10 @@ seasons:
   enabled: true
   # Length of ONE season in in-game days (a year = 4 seasons). /season length overrides it per world.
   length-days: 14
+  # Where a NEW world's calendar starts (stored on first load; later edits don't move existing worlds).
+  # Day 3 skips the blend window with the previous season. Use /season set to change a running world.
+  start-season: SUMMER
+  start-day: 3
   # Interpolate the base temperature around season boundaries instead of jumping.
   smooth-transition: true
   # Width of the blend window centred on each boundary, in days.
@@ -164,7 +168,7 @@ body:
   felt-refresh-ticks: 40
   normal: 37.0
   # °C of core temperature per minute per °C below comfort-min (divided by 1 + clothing insulation).
-  cooling-rate: 0.03
+  cooling-rate: 0.015
   heating-rate: 0.02
   recovery-rate: 0.6
   metabolic-heat: 0.1
@@ -265,6 +269,14 @@ mobs:
 
 thermometer:
   enabled: true
+  # Without a thermometer, players now and then get a rough guess on the action bar (e.g. "~5°C"),
+  # but only while the temperature is uncomfortable (outside temperature.comfort-min..comfort-max).
+  rough-reading:
+    enabled: true
+    step: 5                    # reading is rounded to this many °C
+    max-error: 3.0             # random error (± °C) added before rounding
+    min-interval-seconds: 20   # random pause between hints
+    max-interval-seconds: 60
 
 performance:
   # Global budget of player/command room scans per tick (API and commands are never refused).

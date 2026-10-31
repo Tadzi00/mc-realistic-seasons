@@ -22,11 +22,13 @@ class BodyTemperatureModelTest {
     }
 
     @Test
-    void nakedInFreezingColdReachesHypothermiaInMinutes() {
-        double after5 = simulate(-10, 0, false, 300);
+    void nakedInFreezingColdReachesHypothermiaWithinAboutOneDay() {
+        // Tuned so a -10 °C night is survivable for a while but one Minecraft day (20 min) is not.
         double after10 = simulate(-10, 0, false, 600);
-        assertTrue(after5 < 35.5, "after 5 min: " + after5);
-        assertEquals(BodyStage.HYPOTHERMIA, m.stage(after10), "after 10 min: " + after10);
+        double after20 = simulate(-10, 0, false, 1200);
+        assertTrue(after10 < 35.5, "after 10 min: " + after10);
+        assertTrue(m.stage(after10) != BodyStage.HYPOTHERMIA, "too fast, after 10 min: " + after10);
+        assertEquals(BodyStage.HYPOTHERMIA, m.stage(after20), "after 20 min: " + after20);
     }
 
     @Test
@@ -40,8 +42,9 @@ class BodyTemperatureModelTest {
     @Test
     void wetIsColder() {
         assertTrue(simulate(0, 0, true, 300) < simulate(0, 0, false, 300));
-        // wet in mild weather is still uncomfortable: 14°C - 4 penalty = 10 < comfortMin
-        assertTrue(simulate(14, 0, true, 600) < 37.0);
+        // at 8 °C dry, metabolism keeps up; wet (8 - 4 penalty, x1.5) it doesn't
+        assertTrue(simulate(8, 0, true, 600) < 37.0);
+        assertTrue(simulate(8, 0, true, 600) < simulate(8, 0, false, 600));
     }
 
     @Test

@@ -44,6 +44,7 @@ public final class BodyService implements Listener {
         int lastBodyDamageTick = Integer.MIN_VALUE;
         BodyStage damageStage;
         boolean overlayLocked;
+        int nextRoughTick; // next tick a rough "~5°C" hint may show (0 = right away)
     }
 
     private final RealisticSeasonsPlugin plugin;
@@ -104,7 +105,9 @@ public final class BodyService implements Listener {
             if (now - st.feltTick >= s.feltRefreshTicks || st.lastFelt == null) {
                 refreshFelt(p, st, RoomService.Budget.PLAYER);
             }
-            if (plugin.thermometer() != null) plugin.thermometer().showIfHolding(p, st);
+            if (plugin.thermometer() != null && !plugin.thermometer().showIfHolding(p, st)) {
+                plugin.thermometer().maybeShowRough(p, st, now);
+            }
 
             if (!s.bodyEnabled || !enabledHere || p.getGameMode() == GameMode.CREATIVE
                     || p.getGameMode() == GameMode.SPECTATOR || p.isDead() || Double.isNaN(st.felt)) {
