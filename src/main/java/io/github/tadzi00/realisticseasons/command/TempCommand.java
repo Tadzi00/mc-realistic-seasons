@@ -8,6 +8,7 @@ import io.github.tadzi00.realisticseasons.core.RawContract;
 import io.github.tadzi00.realisticseasons.core.SeasonCalculator;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -48,6 +49,17 @@ public final class TempCommand implements CommandExecutor, TabCompleter {
         String kind = roomMode ? "room" : "temp";
         if (!sender.hasPermission("realisticseasons.raw")) {
             sender.sendMessage(RawContract.errorLine("no permission"));
+            return;
+        }
+        // raw player <name>: that player's position, plus body temperature and stage
+        if (args.length >= 3 && args[1].equalsIgnoreCase("player")) {
+            Player target = Bukkit.getPlayerExact(args[2]);
+            if (target == null) {
+                sender.sendMessage(RawContract.errorLine("player not online: " + args[2]));
+                return;
+            }
+            sender.sendMessage(RawContract.lineWithBody(kind, plugin.temperatures().report(target.getLocation(), roomMode),
+                    plugin.body().bodyTemperature(target), plugin.body().stage(target).name()));
             return;
         }
         RawTarget.Parsed t = RawTarget.parse(sender, args, 1);

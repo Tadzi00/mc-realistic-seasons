@@ -232,6 +232,13 @@ double  getBodyTemperature(org.bukkit.entity.Player)
 ```
 Adding methods is fine; renaming/removing is not.
 
+### 11.1 Additive v1 fields: body temperature
+
+`/temp raw player <name>` (and `/room raw player <name>`) report at that player's position and append
+`"bodyC":<one decimal>,"stage":"<COMFORTABLE|COLD|SHIVERING|HYPOTHERMIA|HOT|HEAT_STROKE>"` after `comfortable`.
+The coordinate forms are unchanged. Adding fields at the end is allowed within v1 (readers ignore unknown
+fields); removing/renaming still requires v2. Guarded by `RawContractTest.lineWithBodyAppendsBodyFields`.
+
 ## 12. Known simplifications / limitations
 
 - One temperature per room (well-mixed air) + local radiant heat; no vertical stratification.

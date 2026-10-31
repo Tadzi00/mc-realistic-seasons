@@ -50,4 +50,12 @@ class RawContractTest {
     void errorLineIsEscaped() {
         assertEquals("RS|v1|error|{\"error\":\"bad \\\"x\\\"\"}", RawContract.errorLine("bad \"x\""));
     }
+
+    @org.junit.jupiter.api.Test
+    void lineWithBodyAppendsBodyFields() {
+        RawContract.Report r = new RawContract.Report(false, false, 0, 0, 0, -3.2, -3.2, "winter", false);
+        org.junit.jupiter.api.Assertions.assertEquals(
+                "RS|v1|temp|{\"inside\":false,\"sealed\":false,\"volume\":0,\"leaks\":{\"small\":0,\"large\":0},\"tempC\":-3.2,\"outsideC\":-3.2,\"season\":\"WINTER\",\"comfortable\":false,\"bodyC\":34.1,\"stage\":\"SHIVERING\"}",
+                RawContract.lineWithBody("temp", r, 34.06, "shivering"));
+    }
 }

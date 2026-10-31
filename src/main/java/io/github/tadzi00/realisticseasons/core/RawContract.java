@@ -35,6 +35,17 @@ public final class RawContract {
         return PREFIX + kind + "|" + json(r);
     }
 
+    /**
+     * Same line plus the player's body: {@code ...,"comfortable":false,"bodyC":34.1,"stage":"SHIVERING"}.
+     * Additive (v1 readers ignore unknown fields); produced by {@code /temp raw player <name>}.
+     */
+    public static String lineWithBody(String kind, Report r, double bodyC, String stage) {
+        String j = json(r);
+        return PREFIX + kind + "|" + j.substring(0, j.length() - 1)
+                + ",\"bodyC\":" + oneDecimal(bodyC)
+                + ",\"stage\":\"" + escape(stage.toUpperCase(Locale.ROOT)) + "\"}";
+    }
+
     public static String errorLine(String message) {
         return PREFIX + "error|{\"error\":\"" + escape(message) + "\"}";
     }
