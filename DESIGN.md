@@ -238,6 +238,9 @@ Adding methods is fine; renaming/removing is not.
 heading to (thermal inertia, τ = thermal-time-constant-seconds). Lets callers judge "warm enough" right after
 adding heat instead of waiting minutes.
 
+All raw `temp`/`room` lines also append `"day":<day of season, 1-based>,"seasonDays":<season length>`
+(additive), so callers can see the next season coming.
+
 ### 11.1 Additive v1 fields: body temperature
 
 `/temp raw player <name>` (and `/room raw player <name>`) report at that player's position and append

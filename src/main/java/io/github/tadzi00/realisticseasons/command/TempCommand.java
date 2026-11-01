@@ -58,8 +58,11 @@ public final class TempCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(RawContract.errorLine("player not online: " + args[2]));
                 return;
             }
-            sender.sendMessage(RawContract.lineWithBody(kind, plugin.temperatures().report(target.getLocation(), roomMode),
-                    plugin.body().bodyTemperature(target), plugin.body().stage(target).name()));
+            var sp = plugin.seasons().position(target.getWorld());
+            sender.sendMessage(RawContract.withFields(
+                    RawContract.lineWithBody(kind, plugin.temperatures().report(target.getLocation(), roomMode),
+                            plugin.body().bodyTemperature(target), plugin.body().stage(target).name()),
+                    "\"day\":" + sp.dayOfSeason() + ",\"seasonDays\":" + sp.lengthDays()));
             return;
         }
         RawTarget.Parsed t = RawTarget.parse(sender, args, 1);
@@ -73,6 +76,8 @@ public final class TempCommand implements CommandExecutor, TabCompleter {
             return;
         }
         String line = RawContract.line(kind, plugin.temperatures().report(loc, roomMode));
+        var sp = plugin.seasons().position(loc.getWorld());
+        line = RawContract.withFields(line, "\"day\":" + sp.dayOfSeason() + ",\"seasonDays\":" + sp.lengthDays());
         if (roomMode) {
             double eq = plugin.temperatures().equilibrium(loc);
             if (!Double.isNaN(eq)) line = RawContract.withFields(line, "\"equilibriumC\":" + RawContract.oneDecimal(eq));
