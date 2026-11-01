@@ -140,11 +140,12 @@ heat:
   # Outdoors, scan this many blocks around a point for heat sources.
   local-scan-radius: 5
   # power (heat units) and radius (blocks). requires-lit: only counts when the block is lit.
+  # max-temp (optional, C): this source never heats a room or a nearby spot above this temperature.
   sources:
-    TORCH: {power: 6, radius: 4}
-    WALL_TORCH: {power: 6, radius: 4}
-    SOUL_TORCH: {power: 3, radius: 3}
-    SOUL_WALL_TORCH: {power: 3, radius: 3}
+    TORCH: {power: 6, radius: 4, max-temp: 25}
+    WALL_TORCH: {power: 6, radius: 4, max-temp: 25}
+    SOUL_TORCH: {power: 3, radius: 3, max-temp: 25}
+    SOUL_WALL_TORCH: {power: 3, radius: 3, max-temp: 25}
     LANTERN: {power: 8, radius: 4}
     SOUL_LANTERN: {power: 4, radius: 3}
     CAMPFIRE: {power: 40, radius: 6, requires-lit: true}

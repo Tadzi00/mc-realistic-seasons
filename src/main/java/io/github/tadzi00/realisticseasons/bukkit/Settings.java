@@ -251,7 +251,8 @@ public final class Settings {
             for (String pattern : hsSec.getKeys(false)) {
                 ConfigurationSection s = hsSec.getConfigurationSection(pattern);
                 if (s == null) continue;
-                HeatSourceDef def = new HeatSourceDef(new HeatSource(s.getDouble("power", 0), s.getDouble("radius", 0)),
+                HeatSourceDef def = new HeatSourceDef(new HeatSource(s.getDouble("power", 0), s.getDouble("radius", 0),
+                        s.contains("max-temp") ? s.getDouble("max-temp") : Double.NaN),
                         s.getBoolean("requires-lit", false));
                 List<Material> matched = MaterialPatterns.match(pattern);
                 if (matched.isEmpty()) log.warning("heat.sources: pattern '" + pattern + "' matches no block");

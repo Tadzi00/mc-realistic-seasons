@@ -93,4 +93,44 @@ class HeatModelTest {
                 p.thermalTimeConstantSeconds(), 0.5));
         assertEquals(m.sealedRise(10, 75, 1) / 2, weak.sealedRise(10, 75, 1), 1e-9);
     }
+
+    private static PlacedHeatSource torch(int x, double cap) {
+        return new PlacedHeatSource(x, 0, 0, new HeatSource(6, 4, cap));
+    }
+
+    @Test
+    void cappedTorchesNeverHeatAboveTheirLimit() {
+        List<PlacedHeatSource> many = List.of(torch(0, 25), torch(1, 25), torch(2, 25), torch(3, 25), torch(4, 25), torch(5, 25));
+        double uncapped = m.roomEquilibrium(17, 36, 24, 1.0, 0, 0);
+        assertTrue(uncapped > 25, "six torches would heat a small room past 25C");
+        assertEquals(25, m.roomEquilibrium(17, many, 24, 1.0, 0, 0), 1e-9);
+    }
+
+    @Test
+    void cappedTorchesStillWarmAColdRoom() {
+        List<PlacedHeatSource> one = List.of(torch(0, 25));
+        assertEquals(m.roomEquilibrium(-10, 6, 24, 1.0, 0, 0), m.roomEquilibrium(-10, one, 24, 1.0, 0, 0), 1e-9);
+    }
+
+    @Test
+    void cappedTorchAddsNothingWhenAlreadyHotter() {
+        assertEquals(30, m.roomEquilibrium(30, List.of(torch(0, 25)), 24, 1.0, 0, 0), 1e-9);
+    }
+
+    @Test
+    void uncappedFireStillGoesAboveTheTorchLimit() {
+        List<PlacedHeatSource> mix = List.of(torch(0, 25), new PlacedHeatSource(1, 0, 0, new HeatSource(40, 6)));
+        double t = m.roomEquilibrium(17, mix, 24, 1.0, 0, 0);
+        assertTrue(t > 25, "a campfire is not limited");
+        double fireOnly = m.roomEquilibrium(17, List.of(new PlacedHeatSource(1, 0, 0, new HeatSource(40, 6))), 24, 1.0, 0, 0);
+        assertTrue(t <= fireOnly + 1e-9, "the torch adds nothing above its limit");
+    }
+
+    @Test
+    void localWarmthNearACappedTorchStopsAtTheLimit() {
+        double add = m.localAbove(List.of(torch(0, 25)), 0.5, 0.5, 1.5, 24, 1.0);
+        assertEquals(1.0, add, 1e-9);
+        assertEquals(m.localSum(List.of(new PlacedHeatSource(0, 0, 0, new HeatSource(6, 4))), 0.5, 0.5, 1.5),
+                m.localAbove(List.of(torch(0, 25)), 0.5, 0.5, 1.5, -20, 1.0), 1e-9);
+    }
 }

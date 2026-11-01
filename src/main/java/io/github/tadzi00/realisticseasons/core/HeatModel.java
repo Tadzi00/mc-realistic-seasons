@@ -63,6 +63,60 @@ public final class HeatModel {
         return outside + retention(smallLeaks, largeLeaks) * sealedRise(totalPower, volume, insulation);
     }
 
+    /**
+     * Room equilibrium with per-source temperature limits ("a torch heats a room to at most 25C").
+     * The sealed rise of all sources is shared out by power; uncapped sources' share always counts, each
+     * capped group (lowest limit first) only adds up to its limit.
+     */
+    public double roomEquilibrium(double outside, Collection<PlacedHeatSource> sources, int volume, double insulation,
+                                  int smallLeaks, int largeLeaks) {
+        double total = 0;
+        for (PlacedHeatSource h : sources) total += h.source().power();
+        double rise = retention(smallLeaks, largeLeaks) * sealedRise(total, volume, insulation);
+        if (total <= 0 || rise <= 0) return outside;
+        return applyCaps(outside, sources, rise / total, 1.0);
+    }
+
+    /**
+     * Adds per-source shares to {@code base}: uncapped first, then capped groups by ascending limit, each only up
+     * to its limit. {@code perPower} = degrees per heat unit; {@code shareOf} gives each source's raw share.
+     */
+    private double applyCaps(double base, Collection<PlacedHeatSource> sources, double perPower, double weight) {
+        double t = base;
+        java.util.TreeMap<Double, Double> capped = new java.util.TreeMap<>();
+        for (PlacedHeatSource h : sources) {
+            double add = h.source().power() * perPower * weight;
+            if (h.source().capped()) capped.merge(h.source().maxTempC(), add, Double::sum);
+            else t += add;
+        }
+        for (var e : capped.entrySet()) t += Math.min(e.getValue(), Math.max(0, e.getKey() - t));
+        return t;
+    }
+
+    /**
+     * Local radiant warmth at a point on top of {@code base} (room air or outside temperature), weighted, with
+     * per-source limits: capped sources never push the felt temperature past their limit. Returns the increase.
+     */
+    public double localAbove(Collection<PlacedHeatSource> sources, double x, double y, double z, double base, double weight) {
+        double uncapped = 0;
+        java.util.TreeMap<Double, Double> capped = new java.util.TreeMap<>();
+        for (PlacedHeatSource s : sources) {
+            double c = localContribution(s.source(), s.distanceTo(x, y, z));
+            if (c <= 0) continue;
+            if (s.source().capped()) capped.merge(s.source().maxTempC(), c, Double::sum);
+            else uncapped += c;
+        }
+        double room = p.maxLocalContribution();
+        double t = base + weight * Math.min(uncapped, room);
+        room -= Math.min(uncapped, room);
+        for (var e : capped.entrySet()) {
+            double add = weight * Math.min(e.getValue(), room);
+            room -= Math.min(e.getValue(), room);
+            t += Math.min(add, Math.max(0, e.getKey() - t));
+        }
+        return t - base;
+    }
+
     /** Local radiant contribution of a single source at distance d. */
     public double localContribution(HeatSource src, double distance) {
         if (src.radius() <= 0 || distance >= src.radius()) return 0;

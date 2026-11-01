@@ -263,6 +263,14 @@ fields); removing/renaming still requires v2. Guarded by `RawContractTest.lineWi
 - Body model is for players only (bots built on player entities are covered automatically).
 - Player-placed exposed ice in non-cold biomes melts when it is warm (see §7).
 
+
+### Per-source temperature limit (`max-temp`)
+A heat source may have `max-temp` (C): it never heats a room, or the felt temperature near it, above that.
+Torches and soul torches default to 25 C, so a room full of torches stays pleasant while a campfire or
+furnace can still make it hot. Math (`HeatModel.roomEquilibrium(…, sources, …)`): the sealed rise of all
+sources is shared by power; uncapped shares always count, capped groups (lowest limit first) add at most up
+to their limit. Same for local warmth (`localAbove`). A capped torch still warms a cold room fully.
+
 ## 13. "Not bugs" list
 
 - **The `~5°C` action-bar hint without a thermometer is wrong on purpose.** It is the felt temperature

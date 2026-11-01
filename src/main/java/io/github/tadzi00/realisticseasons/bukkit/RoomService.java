@@ -188,7 +188,7 @@ public final class RoomService {
     double equilibrium(Room r, double outside) {
         HeatModel hm = plugin.settings().heatModel;
         RoomScan sc = r.scan;
-        return hm.roomEquilibrium(outside, sc.totalHeatPower(), sc.volume(), sc.averageInsulation(),
+        return hm.roomEquilibrium(outside, sc.heatSources(), sc.volume(), sc.averageInsulation(),
                 sc.smallLeaks(), sc.largeLeaks());
     }
 

@@ -90,10 +90,10 @@ public final class TemperatureService {
             RoomService.Room room = lookup.room();
             double air = plugin.rooms().roomTemperature(w, room);
             RoomScan sc = room.scan;
-            double local = hm.localSum(sc.heatSources(), px, py, pz) * hm.localWeight(true, sc.smallLeaks(), sc.largeLeaks());
+            double local = hm.localAbove(sc.heatSources(), px, py, pz, air, hm.localWeight(true, sc.smallLeaks(), sc.largeLeaks()));
             return new Felt(air + local, air, outside, lookup);
         }
-        double local = s.heatEnabled ? hm.localSum(scanLocalSources(w, bx, by, bz, s), px, py, pz) : 0;
+        double local = s.heatEnabled ? hm.localAbove(scanLocalSources(w, bx, by, bz, s), px, py, pz, outside, 1.0) : 0;
         return new Felt(outside + local, outside, outside, lookup);
     }
 
@@ -135,8 +135,8 @@ public final class TemperatureService {
         double air = plugin.rooms().roomTemperature(w, room);
         RoomScan sc = room.scan;
         HeatModel hm = s.heatModel;
-        return air + hm.localSum(sc.heatSources(), block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5)
-                * hm.localWeight(true, sc.smallLeaks(), sc.largeLeaks());
+        return air + hm.localAbove(sc.heatSources(), block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5,
+                air, hm.localWeight(true, sc.smallLeaks(), sc.largeLeaks()));
     }
 
     public boolean isComfortable(double temp) {
